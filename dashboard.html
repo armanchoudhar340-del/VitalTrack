@@ -140,7 +140,8 @@
                             </svg>
                             <div class="progress-text">
                                 <div style="font-size: 24px; font-weight: 700;" id="caloriesLeft">1,420</div>
-                                <div style="font-size: 12px; color: var(--text-dim);">Left to eat</div>
+                                <div style="font-size: 12px; color: var(--text-dim);" id="progressLabel">Left to eat
+                                </div>
                             </div>
                         </div>
                         <div style="display: flex; flex-direction: column; gap: 12px; margin-top: 20px;">
@@ -151,7 +152,9 @@
                             </div>
                             <div
                                 style="height: 6px; background: rgba(0,0,0,0.2); border-radius: 3px; overflow: hidden;">
-                                <div style="height: 100%; width: 56%; background: var(--primary);"></div>
+                                <div id="proteinBar"
+                                    style="height: 100%; width: 0%; background: var(--primary); transition: width 0.4s ease;">
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -160,20 +163,33 @@
                         <div
                             style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
                             <h3>Hydration</h3>
-                            <button class="btn-glass" onclick="addWater()"
-                                style="padding: 4px 12px; font-size: 12px; border-radius: 8px;">+ 250ml</button>
+                            <div style="display: flex; gap: 8px;">
+                                <button class="btn-glass btn-reset" onclick="openResetWaterModal()"
+                                    style="padding: 4px 12px; font-size: 12px; border-radius: 8px;">Reset</button>
+                                <button class="btn-glass" onclick="addWater()"
+                                    style="padding: 4px 12px; font-size: 12px; border-radius: 8px;">+ 250ml</button>
+                            </div>
                         </div>
                         <div style="display: flex; align-items: baseline; gap: 4px; margin-bottom: 8px;">
-                            <span id="waterValue" style="font-size: 24px; font-weight: 700;">1.8</span>
+                            <span id="waterValue" style="font-size: 24px; font-weight: 700;">0.0</span>
                             <span style="color: var(--text-dim);">/ 3.0 Liters</span>
                         </div>
-                        <div
+                        <div id="waterVisualizer"
                             style="height: 80px; background: rgba(59, 130, 246, 0.1); border-radius: 12px; display: flex; align-items: flex-end; padding: 10px; gap: 4px;">
-                            <div style="flex: 1; height: 100%; background: #3b82f6; border-radius: 4px;"></div>
-                            <div style="flex: 1; height: 80%; background: #3b82f6; border-radius: 4px;"></div>
-                            <div style="flex: 1; height: 90%; background: #3b82f6; border-radius: 4px;"></div>
-                            <div style="flex: 1; height: 60%; background: #3b82f6; border-radius: 4px;"></div>
-                            <div style="flex: 1; height: 0%; background: rgba(59, 130, 246, 0.2); border-radius: 4px;">
+                            <div
+                                style="flex: 1; height: 0%; background: #3b82f6; border-radius: 4px; transition: height 0.4s ease;">
+                            </div>
+                            <div
+                                style="flex: 1; height: 0%; background: #3b82f6; border-radius: 4px; transition: height 0.4s ease;">
+                            </div>
+                            <div
+                                style="flex: 1; height: 0%; background: #3b82f6; border-radius: 4px; transition: height 0.4s ease;">
+                            </div>
+                            <div
+                                style="flex: 1; height: 0%; background: #3b82f6; border-radius: 4px; transition: height 0.4s ease;">
+                            </div>
+                            <div
+                                style="flex: 1; height: 0%; background: #3b82f6; border-radius: 4px; transition: height 0.4s ease;">
                             </div>
                         </div>
                     </div>
@@ -211,6 +227,25 @@
                     <button type="submit" class="btn btn-primary">Save Meal</button>
                 </div>
             </form>
+        </div>
+    </div>
+
+    <!-- Reset Hydration Confirmation Modal -->
+    <div class="modal-overlay" id="resetWaterModal">
+        <div class="glass modal-card" style="max-width: 400px;">
+            <div class="modal-header">
+                <h3>Reset Hydration</h3>
+                <button class="btn-glass" onclick="closeResetWaterModal()" style="padding: 8px;"><i
+                        data-lucide="x"></i></button>
+            </div>
+            <p style="color: var(--text-dim); margin-bottom: 24px;">Are you sure you want to reset your daily hydration
+                progress? This action cannot be undone.</p>
+            <div class="modal-footer">
+                <button class="btn btn-glass" onclick="closeResetWaterModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="confirmResetWater()"
+                    style="background: rgba(239, 68, 68, 0.8) !important; border-color: #ef4444 !important;">Reset
+                    Progress</button>
+            </div>
         </div>
     </div>
 

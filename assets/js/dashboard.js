@@ -64,33 +64,77 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // State Management
-let stats = JSON.parse(localStorage.getItem('dashStats')) || {
-    caloriesConsumed: 0,
-    dailyGoal: 2845,
-    proteinConsumed: 0,
-    proteinGoal: 150
-};
-
 let meals = JSON.parse(localStorage.getItem('loggedMeals')) || [];
+let waterIntake = parseFloat(localStorage.getItem('waterIntake')) || 0;
+
+// Constants for goals
+const DAILY_CALORIE_GOAL = 2845;
+const DAILY_PROTEIN_GOAL = 150;
+const DAILY_WATER_GOAL = 3.0;
+
+function calculateStats() {
+    const totals = meals.reduce((acc, meal) => {
+        acc.calories += parseInt(meal.calories);
+        acc.protein += parseInt(meal.protein);
+        return acc;
+    }, { calories: 0, protein: 0 });
+
+    return {
+        caloriesConsumed: totals.calories,
+        dailyGoal: DAILY_CALORIE_GOAL,
+        proteinConsumed: totals.protein,
+        proteinGoal: DAILY_PROTEIN_GOAL,
+        waterConsumed: waterIntake,
+        waterGoal: DAILY_WATER_GOAL
+    };
+}
 
 function saveState() {
-    localStorage.setItem('dashStats', JSON.stringify(stats));
     localStorage.setItem('loggedMeals', JSON.stringify(meals));
+    localStorage.setItem('waterIntake', waterIntake.toString());
 }
 
 function updateDashboardUI() {
+    const stats = calculateStats();
     const totalCalsEl = document.getElementById('totalCalories');
     const leftCalsEl = document.getElementById('caloriesLeft');
+    const progressLabel = document.getElementById('progressLabel');
     const proteinStatusEl = document.getElementById('proteinStatus');
     const goalCircle = document.getElementById('goalCircle');
     const mealList = document.getElementById('mealList');
 
     if (totalCalsEl) totalCalsEl.textContent = stats.caloriesConsumed.toLocaleString();
 
-    const left = stats.dailyGoal - stats.caloriesConsumed;
-    if (leftCalsEl) leftCalsEl.textContent = (left > 0 ? left : 0).toLocaleString();
+    // Logic change: Only show "Left to eat" after at least one meal is added
+    if (leftCalsEl && progressLabel) {
+        if (meals.length === 0) {
+            leftCalsEl.textContent = "0";
+            progressLabel.textContent = "Consumed";
+        } else {
+            const left = stats.dailyGoal - stats.caloriesConsumed;
+            leftCalsEl.textContent = (left > 0 ? left : 0).toLocaleString();
+            progressLabel.textContent = "Left to eat";
+        }
+    }
 
     if (proteinStatusEl) proteinStatusEl.textContent = `${stats.proteinConsumed}g / ${stats.proteinGoal}g`;
+
+    // Protein Bar Logic: Clamp at 100% and change color if exceeded
+    const proteinBar = document.getElementById('proteinBar');
+    if (proteinBar) {
+        const proteinPercentage = (stats.proteinConsumed / stats.proteinGoal) * 100;
+        const clampedProteinPercentage = Math.min(proteinPercentage, 100);
+        proteinBar.style.width = `${clampedProteinPercentage}%`;
+
+        // Optional: Change to a success color (light blue/green) if goal met
+        if (stats.proteinConsumed >= stats.proteinGoal) {
+            proteinBar.style.background = '#00f5a0'; // Bright success green
+            proteinBar.style.boxShadow = '0 0 10px rgba(0, 245, 160, 0.3)';
+        } else {
+            proteinBar.style.background = 'var(--primary)';
+            proteinBar.style.boxShadow = 'none';
+        }
+    }
 
     // Update Circle
     const percentage = (stats.caloriesConsumed / stats.dailyGoal) * 100;
@@ -99,14 +143,44 @@ function updateDashboardUI() {
         goalCircle.style.strokeDashoffset = offset;
     }
 
+    // Update Hydration
+    const waterValueEl = document.getElementById('waterValue');
+    const waterVisualizer = document.getElementById('waterVisualizer');
+
+    if (waterValueEl) waterValueEl.textContent = stats.waterConsumed.toFixed(1);
+
+    if (waterVisualizer) {
+        const bars = waterVisualizer.querySelectorAll('div');
+        const totalBars = bars.length;
+        const waterPercentage = (stats.waterConsumed / stats.waterGoal) * 100;
+
+        bars.forEach((bar, index) => {
+            const barThreshold = (index / totalBars) * 100;
+            const nextThreshold = ((index + 1) / totalBars) * 100;
+
+            let height = 0;
+            if (waterPercentage >= nextThreshold) {
+                height = 100 - (index * 10);
+            } else if (waterPercentage > barThreshold) {
+                const partialPercentage = (waterPercentage - barThreshold) / (100 / totalBars);
+                height = partialPercentage * (100 - (index * 10));
+            }
+
+            bar.style.height = `${Math.max(height, 5)}%`;
+            if (waterPercentage >= 100) {
+                bar.style.background = '#00f5a0';
+            } else {
+                bar.style.background = '#3b82f6';
+            }
+        });
+    }
+
     // Render Meals
     if (mealList) {
         if (meals.length === 0) {
             mealList.innerHTML = '<div style="text-align: center; color: var(--text-dim); padding: 20px;">No meals logged today</div>';
         } else {
-            // Give each meal an index so we can delete it
             mealList.innerHTML = meals.slice().reverse().map((meal, idx) => {
-                // The actual index in the original 'meals' array
                 const originalIndex = meals.length - 1 - idx;
                 return `
                 <div class="meal-item" id="meal-${originalIndex}">
@@ -138,31 +212,16 @@ function updateDashboardUI() {
 
 function deleteMeal(index) {
     const mealEl = document.getElementById(`meal-${index}`);
-    const mealData = meals[index];
 
-    if (!mealData) return;
+    if (index < 0 || index >= meals.length) return;
 
-    // Add fade out animation
     if (mealEl) {
         mealEl.classList.add('meal-fade-out');
     }
 
     setTimeout(() => {
-        // Update stats
-        stats.caloriesConsumed -= mealData.calories;
-        stats.proteinConsumed -= mealData.protein;
-
-        // Ensure stats don't go negative
-        if (stats.caloriesConsumed < 0) stats.caloriesConsumed = 0;
-        if (stats.proteinConsumed < 0) stats.proteinConsumed = 0;
-
-        // Remove from array
         meals.splice(index, 1);
-
-        // Persist
         saveState();
-
-        // Update UI
         updateDashboardUI();
     }, 400);
 }
@@ -200,8 +259,6 @@ document.getElementById('mealForm').addEventListener('submit', (e) => {
     // Update state
     const newMeal = { name, calories, protein, time };
     meals.push(newMeal);
-    stats.caloriesConsumed += calories;
-    stats.proteinConsumed += protein;
 
     // Persist
     saveState();
@@ -227,11 +284,40 @@ document.addEventListener('DOMContentLoaded', () => {
     updateDashboardUI();
 });
 
-let currentWater = 1.8;
-function addWater() {
-    if (currentWater < 3.0) {
-        currentWater += 0.25;
-        if (currentWater > 3.0) currentWater = 3.0;
-        document.getElementById('waterValue').textContent = currentWater.toFixed(1);
+function openResetWaterModal() {
+    const modal = document.getElementById('resetWaterModal');
+    if (modal) {
+        modal.style.display = 'flex';
+        setTimeout(() => modal.classList.add('active'), 10);
     }
 }
+
+function closeResetWaterModal() {
+    const modal = document.getElementById('resetWaterModal');
+    if (modal) {
+        modal.classList.remove('active');
+        setTimeout(() => modal.style.display = 'none', 300);
+    }
+}
+
+function confirmResetWater() {
+    waterIntake = 0;
+    saveState();
+    updateDashboardUI();
+    closeResetWaterModal();
+}
+
+window.openResetWaterModal = openResetWaterModal;
+window.closeResetWaterModal = closeResetWaterModal;
+window.confirmResetWater = confirmResetWater;
+
+function addWater() {
+    if (waterIntake < DAILY_WATER_GOAL) {
+        waterIntake += 0.25;
+        if (waterIntake > DAILY_WATER_GOAL) waterIntake = DAILY_WATER_GOAL;
+        saveState();
+        updateDashboardUI();
+    }
+}
+
+window.addWater = addWater;
