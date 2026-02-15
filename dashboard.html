@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard | VitalTrack</title>
+    <link rel="stylesheet" href="index.css">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+    <div class="app-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar glass">
+            <div class="logo">
+                <i data-lucide="zap"></i>
+                <span>VitalTrack</span>
+            </div>
+
+            <nav class="nav-links">
+                <a href="dashboard.html" class="nav-item active">
+                    <i data-lucide="layout-dashboard"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="analytics.html" class="nav-item">
+                    <i data-lucide="bar-chart-3"></i>
+                    <span>Analytics</span>
+                </a>
+                <a href="profile.html" class="nav-item">
+                    <i data-lucide="user"></i>
+                    <span>Profile</span>
+                </a>
+                <a href="settings.html" class="nav-item">
+                    <i data-lucide="settings"></i>
+                    <span>Settings</span>
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <a href="#" onclick="logout()" class="nav-item">
+                    <i data-lucide="log-out"></i>
+                    <span>Logout</span>
+                </a>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header style="margin-bottom: 40px; display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <h1 id="welcomeText" style="font-size: 28px; margin-bottom: 4px;">Good Morning, Alex</h1>
+                    <p style="color: var(--text-dim);">Today is Monday, October 23rd</p>
+                </div>
+                <button class="btn btn-primary" onclick="logMeal()">
+                    <i data-lucide="plus"></i>
+                    Log Meal
+                </button>
+            </header>
+
+            <!-- Stats Overview -->
+            <div class="stats-grid">
+                <div class="stat-card glass">
+                    <div class="stat-header">
+                        <div class="stat-icon" style="background: rgba(0, 245, 160, 0.1); color: var(--primary);">
+                            <i data-lucide="flame"></i>
+                        </div>
+                        <span style="color: var(--primary); font-size: 12px; font-weight: 600;">+12%</span>
+                    </div>
+                    <div class="stat-value" id="totalCalories">2,845</div>
+                    <div class="stat-label">Daily Calories</div>
+                </div>
+
+                <div class="stat-card glass">
+                    <div class="stat-header">
+                        <div class="stat-icon" style="background: rgba(59, 130, 246, 0.1); color: #3b82f6;">
+                            <i data-lucide="droplet"></i>
+                        </div>
+                        <span style="color: #3b82f6; font-size: 12px; font-weight: 600;">85%</span>
+                    </div>
+                    <div class="stat-value">2.4L</div>
+                    <div class="stat-label">Water Intake</div>
+                </div>
+
+                <div class="stat-card glass">
+                    <div class="stat-header">
+                        <div class="stat-icon" style="background: rgba(168, 85, 247, 0.1); color: #a855f7;">
+                            <i data-lucide="activity"></i>
+                        </div>
+                        <span style="color: #a855f7; font-size: 12px; font-weight: 600;">Active</span>
+                    </div>
+                    <div class="stat-value">42 min</div>
+                    <div class="stat-label">Workout Duration</div>
+                </div>
+
+                <div class="stat-card glass">
+                    <div class="stat-header">
+                        <div class="stat-icon" style="background: rgba(234, 179, 8, 0.1); color: #eab308;">
+                            <i data-lucide="footprints"></i>
+                        </div>
+                        <span style="color: #eab308; font-size: 12px; font-weight: 600;">8.4k</span>
+                    </div>
+                    <div class="stat-value">8,432</div>
+                    <div class="stat-label">Daily Steps</div>
+                </div>
+            </div>
+
+            <div class="dashboard-grid">
+                <!-- Main Chart -->
+                <div class="chart-section glass">
+                    <h3 style="margin-bottom: 24px;">Weekly Progress</h3>
+                    <div style="height: 300px;">
+                        <canvas id="progressChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Recent Meals -->
+                <div class="recent-meals-section glass" style="padding: 24px;">
+                    <div
+                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <h3>Today's Meals</h3>
+                        <span style="color: var(--text-dim); font-size: 14px;">Recent entries</span>
+                    </div>
+                    <div class="meal-list" id="mealList">
+                        <!-- Meals will be injected here -->
+                        <div style="text-align: center; color: var(--text-dim); padding: 20px;">No meals logged today
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Circular Progress Column -->
+                <div class="tracking-section">
+                    <div class="progress-card glass">
+                        <h3 style="text-align: center; font-size: 16px; color: var(--text-dim);">Daily Goal</h3>
+                        <div class="circular-progress">
+                            <svg>
+                                <circle class="bg" cx="75" cy="75" r="70"></circle>
+                                <circle class="fg" cx="75" cy="75" r="70" id="goalCircle"></circle>
+                            </svg>
+                            <div class="progress-text">
+                                <div style="font-size: 24px; font-weight: 700;" id="caloriesLeft">1,420</div>
+                                <div style="font-size: 12px; color: var(--text-dim);">Left to eat</div>
+                            </div>
+                        </div>
+                        <div style="display: flex; flex-direction: column; gap: 12px; margin-top: 20px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <span style="font-size: 14px;">Protein</span>
+                                <span style="font-size: 14px; color: var(--primary);" id="proteinStatus">85g /
+                                    150g</span>
+                            </div>
+                            <div
+                                style="height: 6px; background: rgba(0,0,0,0.2); border-radius: 3px; overflow: hidden;">
+                                <div style="height: 100%; width: 56%; background: var(--primary);"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="glass" style="padding: 24px;">
+                        <div
+                            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                            <h3>Hydration</h3>
+                            <button class="btn-glass" onclick="addWater()"
+                                style="padding: 4px 12px; font-size: 12px; border-radius: 8px;">+ 250ml</button>
+                        </div>
+                        <div style="display: flex; align-items: baseline; gap: 4px; margin-bottom: 8px;">
+                            <span id="waterValue" style="font-size: 24px; font-weight: 700;">1.8</span>
+                            <span style="color: var(--text-dim);">/ 3.0 Liters</span>
+                        </div>
+                        <div
+                            style="height: 80px; background: rgba(59, 130, 246, 0.1); border-radius: 12px; display: flex; align-items: flex-end; padding: 10px; gap: 4px;">
+                            <div style="flex: 1; height: 100%; background: #3b82f6; border-radius: 4px;"></div>
+                            <div style="flex: 1; height: 80%; background: #3b82f6; border-radius: 4px;"></div>
+                            <div style="flex: 1; height: 90%; background: #3b82f6; border-radius: 4px;"></div>
+                            <div style="flex: 1; height: 60%; background: #3b82f6; border-radius: 4px;"></div>
+                            <div style="flex: 1; height: 0%; background: rgba(59, 130, 246, 0.2); border-radius: 4px;">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Log Meal Modal -->
+    <div class="modal-overlay" id="mealModal">
+        <div class="modal-card glass">
+            <div class="modal-header">
+                <h2>Log New Meal</h2>
+                <button class="btn-glass" onclick="closeMealModal()" style="padding: 8px; border-radius: 50%;">
+                    <i data-lucide="x"></i>
+                </button>
+            </div>
+            <form id="mealForm">
+                <div class="form-group">
+                    <label>Meal Name</label>
+                    <input type="text" id="mealName" placeholder="e.g. Chicken Salad" required>
+                </div>
+                <div class="input-grid">
+                    <div class="form-group">
+                        <label>Calories (kcal)</label>
+                        <input type="number" id="mealCalories" placeholder="0" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Protein (g)</label>
+                        <input type="number" id="mealProtein" placeholder="0" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-glass" onclick="closeMealModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Meal</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="assets/js/auth.js"></script>
+    <script src="assets/js/dashboard.js"></script>
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+
+</html>

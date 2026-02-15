@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings | VitalTrack</title>
+    <link rel="stylesheet" href="index.css">
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+
+<body>
+    <div class="app-layout">
+        <aside class="sidebar glass">
+            <div class="logo"><i data-lucide="zap"></i><span>VitalTrack</span></div>
+            <nav class="nav-links">
+                <a href="dashboard.html" class="nav-item">
+                    <i data-lucide="layout-dashboard"></i><span>Dashboard</span>
+                </a>
+                <a href="analytics.html" class="nav-item">
+                    <i data-lucide="bar-chart-3"></i><span>Analytics</span>
+                </a>
+                <a href="profile.html" class="nav-item">
+                    <i data-lucide="user"></i><span>Profile</span>
+                </a>
+                <a href="settings.html" class="nav-item active">
+                    <i data-lucide="settings"></i><span>Settings</span>
+                </a>
+            </nav>
+            <div class="sidebar-footer">
+                <a href="#" onclick="logout()" class="nav-item">
+                    <i data-lucide="log-out"></i><span>Logout</span>
+                </a>
+            </div>
+        </aside>
+        <main class="main-content">
+            <header style="margin-bottom: 40px;">
+                <h1 style="font-size: 28px; margin-bottom: 4px;">Settings</h1>
+                <p style="color: var(--text-dim);">Configure your app experience</p>
+            </header>
+            <div class="glass" style="padding: 40px;">
+                <div style="display: flex; flex-direction: column; gap: 24px;">
+                    <div
+                        style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 20px; border-bottom: 1px solid var(--glass-border);">
+                        <div>
+                            <h3 style="margin-bottom: 4px;">Notifications</h3>
+                            <p style="color: var(--text-dim); font-size: 14px;">Receive daily reminders and goal alerts
+                            </p>
+                        </div>
+                        <div
+                            style="width: 50px; height: 26px; background: var(--primary); border-radius: 13px; position: relative; cursor: pointer;">
+                            <div
+                                style="width: 20px; height: 20px; background: white; border-radius: 50%; position: absolute; top: 3px; right: 3px;">
+                            </div>
+                        </div>
+                    </div>
+                    <div
+                        style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 20px; border-bottom: 1px solid var(--glass-border);">
+                        <div>
+                            <h3 style="margin-bottom: 4px;">Dark Mode</h3>
+                            <p style="color: var(--text-dim); font-size: 14px;">Toggle system-wide appearance</p>
+                        </div>
+                        <div
+                            style="width: 50px; height: 26px; background: var(--primary); border-radius: 13px; position: relative; cursor: pointer;">
+                            <div
+                                style="width: 20px; height: 20px; background: white; border-radius: 50%; position: absolute; top: 3px; right: 3px;">
+                            </div>
+                        </div>
+                    </div>
+                    <button class="btn btn-glass"
+                        style="color: #ef4444; border-color: rgba(239, 68, 68, 0.2); width: fit-content;">
+                        Delete Account
+                    </button>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script src="assets/js/auth.js"></script>
+    <script>lucide.createIcons();</script>
+</body>
+
+</html>

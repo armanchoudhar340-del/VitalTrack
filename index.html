@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login | VitalTrack</title>
+    <link rel="stylesheet" href="index.css">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+
+<body>
+    <div class="auth-container">
+        <div class="auth-card glass">
+            <div class="auth-header">
+                <div class="logo">
+                    <i data-lucide="zap"></i>
+                    <span>VitalTrack</span>
+                </div>
+                <h2>Welcome Back</h2>
+                <p style="color: var(--text-dim); font-size: 14px; margin-top: 8px;">Optimize your performance today</p>
+            </div>
+
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="email">Email Address</label>
+                    <input type="email" id="email" placeholder="name@example.com" required value="admin@vitaltrack.com">
+                </div>
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" placeholder="••••••••" required value="password123">
+                </div>
+
+                <button type="submit" class="btn btn-primary" style="width: 100%;">
+                    Log In
+                    <i data-lucide="arrow-right"></i>
+                </button>
+            </form>
+
+            <div class="auth-separator">OR CONTINUE WITH</div>
+
+            <div class="social-btns">
+                <button type="button" class="btn btn-glass" onclick="socialLogin('Google')">
+                    <i data-lucide="mail"></i>
+                    Google
+                </button>
+                <div style="text-align: center; margin-top: 24px; font-size: 14px;">
+                    Don't have an account?
+                    <a href="#" onclick="mockSignUp()"
+                        style="color: var(--primary); text-decoration: none; font-weight: 600;">Sign Up</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="assets/js/auth.js"></script>
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+
+</html>
