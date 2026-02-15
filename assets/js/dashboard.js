@@ -1,3 +1,4 @@
+let progressChart;
 document.addEventListener('DOMContentLoaded', () => {
     // Populate User Name
     const userData = JSON.parse(localStorage.getItem('userData'));
@@ -13,13 +14,13 @@ document.addEventListener('DOMContentLoaded', () => {
     gradient.addColorStop(0, 'rgba(0, 245, 160, 0.4)');
     gradient.addColorStop(1, 'rgba(0, 245, 160, 0)');
 
-    new Chart(ctx, {
+    progressChart = new Chart(ctx, {
         type: 'line',
         data: {
             labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
             datasets: [{
-                label: 'Calories Burned',
-                data: [2100, 2400, 1900, 2800, 2200, 2600, 2450],
+                label: 'Calories Consumed',
+                data: [0, 0, 0, 0, 0, 0, 0],
                 borderColor: '#00f5a0',
                 borderWidth: 3,
                 tension: 0.4,
@@ -38,6 +39,7 @@ document.addEventListener('DOMContentLoaded', () => {
             },
             scales: {
                 y: {
+                    beginAtZero: true,
                     grid: { color: 'rgba(255,255,255,0.05)', drawBorder: false },
                     ticks: { color: '#94a3b8', font: { size: 12 } }
                 },
@@ -48,6 +50,8 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
     });
+
+    updateDashboardUI();
 
     // Animate Circular Progress
     const circle = document.getElementById('goalCircle');
@@ -65,6 +69,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // State Management
 let meals = JSON.parse(localStorage.getItem('loggedMeals')) || [];
+let workouts = JSON.parse(localStorage.getItem('loggedWorkouts')) || [];
 let waterIntake = parseFloat(localStorage.getItem('waterIntake')) || 0;
 
 // Constants for goals
@@ -72,12 +77,44 @@ const DAILY_CALORIE_GOAL = 2845;
 const DAILY_PROTEIN_GOAL = 150;
 const DAILY_WATER_GOAL = 3.0;
 
+function calculateWeeklyData() {
+    const weeklyCals = [0, 0, 0, 0, 0, 0, 0];
+    const now = new Date();
+
+    // Get the start of the current week (Monday)
+    const currentDay = now.getDay(); // 0 is Sunday, 1 is Monday...
+    const diff = currentDay === 0 ? 6 : currentDay - 1;
+    const startOfWeek = new Date(now);
+    startOfWeek.setDate(now.getDate() - diff);
+    startOfWeek.setHours(0, 0, 0, 0);
+
+    meals.forEach(meal => {
+        if (meal.timestamp) {
+            const mealDate = new Date(meal.timestamp);
+            if (mealDate >= startOfWeek) {
+                let dayIndex = mealDate.getDay();
+                // Map Sunday (0) to index 6, Monday (1) to index 0...
+                let chartIndex = dayIndex === 0 ? 6 : dayIndex - 1;
+                weeklyCals[chartIndex] += parseInt(meal.calories);
+            }
+        }
+    });
+    return weeklyCals;
+}
+
 function calculateStats() {
     const totals = meals.reduce((acc, meal) => {
-        acc.calories += parseInt(meal.calories);
-        acc.protein += parseInt(meal.protein);
+        // Only count today's meals for the summary cards
+        const mealDate = meal.timestamp ? new Date(meal.timestamp) : new Date();
+        const now = new Date();
+        if (mealDate.toDateString() === now.toDateString()) {
+            acc.calories += parseInt(meal.calories);
+            acc.protein += parseInt(meal.protein);
+        }
         return acc;
     }, { calories: 0, protein: 0 });
+
+    const totalWorkoutTime = workouts.reduce((acc, workout) => acc + parseInt(workout.duration), 0);
 
     return {
         caloriesConsumed: totals.calories,
@@ -85,18 +122,25 @@ function calculateStats() {
         proteinConsumed: totals.protein,
         proteinGoal: DAILY_PROTEIN_GOAL,
         waterConsumed: waterIntake,
-        waterGoal: DAILY_WATER_GOAL
+        waterGoal: DAILY_WATER_GOAL,
+        workoutDuration: totalWorkoutTime,
+        steps: totalWorkoutTime * 100,
+        weeklyData: calculateWeeklyData()
     };
 }
 
 function saveState() {
     localStorage.setItem('loggedMeals', JSON.stringify(meals));
+    localStorage.setItem('loggedWorkouts', JSON.stringify(workouts));
     localStorage.setItem('waterIntake', waterIntake.toString());
 }
 
 function updateDashboardUI() {
     const stats = calculateStats();
     const totalCalsEl = document.getElementById('totalCalories');
+    const workoutTimeEl = document.getElementById('totalWorkoutDuration');
+    const dailyStepsEl = document.getElementById('dailyStepsValue');
+    const dailyStepsSummaryEl = document.getElementById('dailyStepsSummary');
     const leftCalsEl = document.getElementById('caloriesLeft');
     const progressLabel = document.getElementById('progressLabel');
     const proteinStatusEl = document.getElementById('proteinStatus');
@@ -104,6 +148,13 @@ function updateDashboardUI() {
     const mealList = document.getElementById('mealList');
 
     if (totalCalsEl) totalCalsEl.textContent = stats.caloriesConsumed.toLocaleString();
+    if (workoutTimeEl) workoutTimeEl.textContent = `${stats.workoutDuration} min`;
+
+    if (dailyStepsEl) dailyStepsEl.textContent = stats.steps.toLocaleString();
+    if (dailyStepsSummaryEl) {
+        const kValue = (stats.steps / 1000).toFixed(1);
+        dailyStepsSummaryEl.textContent = `${kValue}k`;
+    }
 
     // Logic change: Only show "Left to eat" after at least one meal is added
     if (leftCalsEl && progressLabel) {
@@ -145,9 +196,18 @@ function updateDashboardUI() {
 
     // Update Hydration
     const waterValueEl = document.getElementById('waterValue');
+    const topWaterIntakeEl = document.getElementById('topWaterIntake');
+    const waterPercentageEl = document.getElementById('waterPercentage');
     const waterVisualizer = document.getElementById('waterVisualizer');
 
+    const formattedWater = stats.waterConsumed.toFixed(1) + 'L';
     if (waterValueEl) waterValueEl.textContent = stats.waterConsumed.toFixed(1);
+    if (topWaterIntakeEl) topWaterIntakeEl.textContent = formattedWater;
+
+    if (waterPercentageEl) {
+        const waterPct = Math.min(Math.round((stats.waterConsumed / stats.waterGoal) * 100), 100);
+        waterPercentageEl.textContent = waterPct + '%';
+    }
 
     if (waterVisualizer) {
         const bars = waterVisualizer.querySelectorAll('div');
@@ -173,6 +233,12 @@ function updateDashboardUI() {
                 bar.style.background = '#3b82f6';
             }
         });
+    }
+
+    // Update Weekly Chart
+    if (progressChart) {
+        progressChart.data.datasets[0].data = stats.weeklyData;
+        progressChart.update();
     }
 
     // Render Meals
@@ -208,7 +274,54 @@ function updateDashboardUI() {
             lucide.createIcons();
         }
     }
+
+    // Render Workouts
+    const workoutList = document.getElementById('workoutList');
+    if (workoutList) {
+        if (workouts.length === 0) {
+            workoutList.innerHTML = '<div style="text-align: center; color: var(--text-dim); padding: 20px;">No workouts logged today</div>';
+        } else {
+            workoutList.innerHTML = workouts.slice().reverse().map((workout, idx) => {
+                const originalIndex = workouts.length - 1 - idx;
+                return `
+                <div class="meal-item" id="workout-${originalIndex}">
+                    <div class="meal-info">
+                        <div class="meal-icon" style="background: rgba(168, 85, 247, 0.1); color: #a855f7;">
+                            <i data-lucide="activity"></i>
+                        </div>
+                        <div class="meal-details">
+                            <h4>${workout.type}</h4>
+                            <p>${workout.intensity} Intensity • ${workout.time}</p>
+                        </div>
+                    </div>
+                    <div class="meal-actions">
+                         <div class="meal-stats">
+                            <div class="meal-cals" style="color: #a855f7;">${workout.duration} min</div>
+                        </div>
+                        <button class="delete-btn" onclick="deleteWorkout(${originalIndex})" title="Delete Workout">
+                            <i data-lucide="trash-2" style="width: 16px;"></i>
+                        </button>
+                    </div>
+                </div>
+            `;
+            }).join('');
+            lucide.createIcons();
+        }
+    }
 }
+
+function deleteWorkout(index) {
+    const workoutEl = document.getElementById(`workout-${index}`);
+    if (index < 0 || index >= workouts.length) return;
+    if (workoutEl) workoutEl.classList.add('meal-fade-out');
+    setTimeout(() => {
+        workouts.splice(index, 1);
+        saveState();
+        updateDashboardUI();
+    }, 400);
+}
+
+window.deleteWorkout = deleteWorkout;
 
 function deleteMeal(index) {
     const mealEl = document.getElementById(`meal-${index}`);
@@ -228,9 +341,18 @@ function deleteMeal(index) {
 
 window.deleteMeal = deleteMeal;
 
+// Modal Controllers
 function openMealModal() {
     const modal = document.getElementById('mealModal');
     modal.style.display = 'flex';
+
+    // Set default date to today
+    const dateInput = document.getElementById('mealDateInput');
+    if (dateInput) {
+        const today = new Date().toISOString().split('T')[0];
+        dateInput.value = today;
+    }
+
     setTimeout(() => modal.classList.add('active'), 10);
 }
 
@@ -249,29 +371,30 @@ window.closeMealModal = closeMealModal;
 
 document.getElementById('mealForm').addEventListener('submit', (e) => {
     e.preventDefault();
-
     const name = document.getElementById('mealName').value;
     const calories = parseInt(document.getElementById('mealCalories').value);
     const protein = parseInt(document.getElementById('mealProtein').value);
+    const dateValue = document.getElementById('mealDateInput').value;
     const now = new Date();
-    const time = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
-    // Update state
-    const newMeal = { name, calories, protein, time };
+    let mealDate;
+    if (dateValue) {
+        mealDate = new Date(dateValue);
+        // Use current time for the meal time field
+        mealDate.setHours(now.getHours(), now.getMinutes(), now.getSeconds());
+    } else {
+        mealDate = now;
+    }
+
+    const time = mealDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const newMeal = { name, calories, protein, time, timestamp: mealDate.getTime() };
     meals.push(newMeal);
-
-    // Persist
     saveState();
-
-    // Update UI
     updateDashboardUI();
-
-    // Success feedback
     const saveBtn = e.target.querySelector('button[type="submit"]');
     const originalText = saveBtn.innerHTML;
     saveBtn.innerHTML = '<i data-lucide="check"></i> Saved!';
     lucide.createIcons();
-
     setTimeout(() => {
         closeMealModal();
         saveBtn.innerHTML = originalText;
@@ -279,9 +402,53 @@ document.getElementById('mealForm').addEventListener('submit', (e) => {
     }, 800);
 });
 
+function openWorkoutModal() {
+    const modal = document.getElementById('workoutModal');
+    modal.style.display = 'flex';
+    setTimeout(() => modal.classList.add('active'), 10);
+}
+
+function closeWorkoutModal() {
+    const modal = document.getElementById('workoutModal');
+    modal.classList.remove('active');
+    setTimeout(() => {
+        modal.style.display = 'none';
+        document.getElementById('workoutForm').reset();
+    }, 300);
+}
+
+window.logWorkout = openWorkoutModal;
+window.closeWorkoutModal = closeWorkoutModal;
+
+document.getElementById('workoutForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const type = document.getElementById('workoutType').value;
+    const duration = parseInt(document.getElementById('workoutDuration').value);
+    const intensity = document.getElementById('workoutIntensity').value;
+    const now = new Date();
+    const time = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+    const newWorkout = { type, duration, intensity, time };
+    workouts.push(newWorkout);
+    saveState();
+    updateDashboardUI();
+
+    const saveBtn = e.target.querySelector('button[type="submit"]');
+    const originalText = saveBtn.innerHTML;
+    saveBtn.innerHTML = '<i data-lucide="check"></i> Saved!';
+    lucide.createIcons();
+
+    setTimeout(() => {
+        closeWorkoutModal();
+        saveBtn.innerHTML = originalText;
+        lucide.createIcons();
+    }, 800);
+});
+
+
 // Initial Load
 document.addEventListener('DOMContentLoaded', () => {
-    updateDashboardUI();
+    // updateDashboardUI is called inside DOMContentLoaded after chart init
 });
 
 function openResetWaterModal() {

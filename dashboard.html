@@ -53,10 +53,17 @@
                     <h1 id="welcomeText" style="font-size: 28px; margin-bottom: 4px;">Good Morning, Alex</h1>
                     <p style="color: var(--text-dim);">Today is Monday, October 23rd</p>
                 </div>
-                <button class="btn btn-primary" onclick="logMeal()">
-                    <i data-lucide="plus"></i>
-                    Log Meal
-                </button>
+                <div style="display: flex; gap: 12px;">
+                    <button class="btn btn-glass" onclick="logWorkout()"
+                        style="background: rgba(168, 85, 247, 0.1); color: #a855f7; border-color: rgba(168, 85, 247, 0.2);">
+                        <i data-lucide="plus"></i>
+                        Log Workout
+                    </button>
+                    <button class="btn btn-primary" onclick="logMeal()">
+                        <i data-lucide="plus"></i>
+                        Log Meal
+                    </button>
+                </div>
             </header>
 
             <!-- Stats Overview -->
@@ -77,9 +84,9 @@
                         <div class="stat-icon" style="background: rgba(59, 130, 246, 0.1); color: #3b82f6;">
                             <i data-lucide="droplet"></i>
                         </div>
-                        <span style="color: #3b82f6; font-size: 12px; font-weight: 600;">85%</span>
+                        <span style="color: #3b82f6; font-size: 12px; font-weight: 600;" id="waterPercentage">0%</span>
                     </div>
-                    <div class="stat-value">2.4L</div>
+                    <div class="stat-value" id="topWaterIntake">0.0L</div>
                     <div class="stat-label">Water Intake</div>
                 </div>
 
@@ -90,7 +97,7 @@
                         </div>
                         <span style="color: #a855f7; font-size: 12px; font-weight: 600;">Active</span>
                     </div>
-                    <div class="stat-value">42 min</div>
+                    <div class="stat-value" id="totalWorkoutDuration">0 min</div>
                     <div class="stat-label">Workout Duration</div>
                 </div>
 
@@ -99,9 +106,10 @@
                         <div class="stat-icon" style="background: rgba(234, 179, 8, 0.1); color: #eab308;">
                             <i data-lucide="footprints"></i>
                         </div>
-                        <span style="color: #eab308; font-size: 12px; font-weight: 600;">8.4k</span>
+                        <span style="color: #eab308; font-size: 12px; font-weight: 600;"
+                            id="dailyStepsSummary">0k</span>
                     </div>
-                    <div class="stat-value">8,432</div>
+                    <div class="stat-value" id="dailyStepsValue">0</div>
                     <div class="stat-label">Daily Steps</div>
                 </div>
             </div>
@@ -125,6 +133,19 @@
                     <div class="meal-list" id="mealList">
                         <!-- Meals will be injected here -->
                         <div style="text-align: center; color: var(--text-dim); padding: 20px;">No meals logged today
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Workouts -->
+                <div class="glass" style="padding: 24px;">
+                    <div
+                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <h3>Today's Workouts</h3>
+                        <span style="color: var(--text-dim); font-size: 14px;">Total active time</span>
+                    </div>
+                    <div class="meal-list" id="workoutList">
+                        <div style="text-align: center; color: var(--text-dim); padding: 20px;">No workouts logged today
                         </div>
                     </div>
                 </div>
@@ -212,6 +233,10 @@
                     <label>Meal Name</label>
                     <input type="text" id="mealName" placeholder="e.g. Chicken Salad" required>
                 </div>
+                <div class="form-group">
+                    <label>Date</label>
+                    <input type="date" id="mealDateInput" required>
+                </div>
                 <div class="input-grid">
                     <div class="form-group">
                         <label>Calories (kcal)</label>
@@ -225,6 +250,45 @@
                 <div class="modal-footer">
                     <button type="button" class="btn btn-glass" onclick="closeMealModal()">Cancel</button>
                     <button type="submit" class="btn btn-primary">Save Meal</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+
+    <!-- Log Workout Modal -->
+    <div class="modal-overlay" id="workoutModal">
+        <div class="modal-card glass">
+            <div class="modal-header">
+                <h2>Log New Workout</h2>
+                <button class="btn-glass" onclick="closeWorkoutModal()" style="padding: 8px; border-radius: 50%;">
+                    <i data-lucide="x"></i>
+                </button>
+            </div>
+            <form id="workoutForm">
+                <div class="form-group">
+                    <label>Workout Type</label>
+                    <input type="text" id="workoutType" placeholder="e.g. Running, Yoga, Gym" required>
+                </div>
+                <div class="input-grid">
+                    <div class="form-group">
+                        <label>Duration (min)</label>
+                        <input type="number" id="workoutDuration" placeholder="0" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Intensity</label>
+                        <select id="workoutIntensity"
+                            style="width: 100%; background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); color: #fff; padding: 12px; border-radius: 8px;">
+                            <option value="Low">Low</option>
+                            <option value="Moderate" selected>Moderate</option>
+                            <option value="High">High</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-glass" onclick="closeWorkoutModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary"
+                        style="background: #a855f7; border-color: #a855f7;">Save Workout</button>
                 </div>
             </form>
         </div>
