@@ -70,7 +70,17 @@ document.addEventListener('DOMContentLoaded', () => {
 // State Management
 let meals = JSON.parse(localStorage.getItem('loggedMeals')) || [];
 let workouts = JSON.parse(localStorage.getItem('loggedWorkouts')) || [];
-let waterIntake = parseFloat(localStorage.getItem('waterIntake')) || 0;
+let waterEntries = JSON.parse(localStorage.getItem('loggedWater')) || [];
+
+// Migration for old waterIntake if it exists
+if (localStorage.getItem('waterIntake')) {
+    const oldWater = parseFloat(localStorage.getItem('waterIntake'));
+    if (oldWater > 0) {
+        waterEntries.push({ amount: oldWater, timestamp: new Date().getTime() });
+        localStorage.removeItem('waterIntake');
+        localStorage.setItem('loggedWater', JSON.stringify(waterEntries));
+    }
+}
 
 // Constants for goals
 const DAILY_CALORIE_GOAL = 2845;
@@ -114,14 +124,23 @@ function calculateStats() {
         return acc;
     }, { calories: 0, protein: 0 });
 
-    const totalWorkoutTime = workouts.reduce((acc, workout) => acc + parseInt(workout.duration), 0);
+    const today = new Date().toDateString();
+    const todayWater = waterEntries.reduce((acc, water) => {
+        const waterDate = new Date(water.timestamp).toDateString();
+        return waterDate === today ? acc + water.amount : acc;
+    }, 0);
+
+    const totalWorkoutTime = workouts.reduce((acc, workout) => {
+        const workoutDate = workout.timestamp ? new Date(workout.timestamp).toDateString() : today;
+        return workoutDate === today ? acc + parseInt(workout.duration) : acc;
+    }, 0);
 
     return {
         caloriesConsumed: totals.calories,
         dailyGoal: DAILY_CALORIE_GOAL,
         proteinConsumed: totals.protein,
         proteinGoal: DAILY_PROTEIN_GOAL,
-        waterConsumed: waterIntake,
+        waterConsumed: todayWater,
         waterGoal: DAILY_WATER_GOAL,
         workoutDuration: totalWorkoutTime,
         steps: totalWorkoutTime * 100,
@@ -132,7 +151,7 @@ function calculateStats() {
 function saveState() {
     localStorage.setItem('loggedMeals', JSON.stringify(meals));
     localStorage.setItem('loggedWorkouts', JSON.stringify(workouts));
-    localStorage.setItem('waterIntake', waterIntake.toString());
+    localStorage.setItem('loggedWater', JSON.stringify(waterEntries));
 }
 
 function updateDashboardUI() {
@@ -310,6 +329,9 @@ function updateDashboardUI() {
     }
 }
 
+// Global scope functions for analytics to use if needed
+window.calculateStats = calculateStats;
+
 function deleteWorkout(index) {
     const workoutEl = document.getElementById(`workout-${index}`);
     if (index < 0 || index >= workouts.length) return;
@@ -428,7 +450,7 @@ document.getElementById('workoutForm').addEventListener('submit', (e) => {
     const now = new Date();
     const time = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
-    const newWorkout = { type, duration, intensity, time };
+    const newWorkout = { type, duration, intensity, time, timestamp: now.getTime() };
     workouts.push(newWorkout);
     saveState();
     updateDashboardUI();
@@ -468,7 +490,8 @@ function closeResetWaterModal() {
 }
 
 function confirmResetWater() {
-    waterIntake = 0;
+    const today = new Date().toDateString();
+    waterEntries = waterEntries.filter(w => new Date(w.timestamp).toDateString() !== today);
     saveState();
     updateDashboardUI();
     closeResetWaterModal();
@@ -479,9 +502,9 @@ window.closeResetWaterModal = closeResetWaterModal;
 window.confirmResetWater = confirmResetWater;
 
 function addWater() {
-    if (waterIntake < DAILY_WATER_GOAL) {
-        waterIntake += 0.25;
-        if (waterIntake > DAILY_WATER_GOAL) waterIntake = DAILY_WATER_GOAL;
+    const stats = calculateStats();
+    if (stats.waterConsumed < DAILY_WATER_GOAL) {
+        waterEntries.push({ amount: 0.25, timestamp: new Date().getTime() });
         saveState();
         updateDashboardUI();
     }

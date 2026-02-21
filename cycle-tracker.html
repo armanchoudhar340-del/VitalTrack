@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cycle Tracker | VitalTrack</title>
+    <link rel="stylesheet" href="index.css">
+    <link rel="stylesheet" href="assets/css/cycle-tracker.css">
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+
+<body>
+    <div class="app-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar glass">
+            <div class="logo">
+                <i data-lucide="zap"></i>
+                <span>VitalTrack</span>
+            </div>
+
+            <nav class="nav-links">
+                <a href="dashboard.html" class="nav-item">
+                    <i data-lucide="layout-dashboard"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="analytics.html" class="nav-item">
+                    <i data-lucide="bar-chart-3"></i>
+                    <span>Analytics</span>
+                </a>
+                <a href="cycle-tracker.html" class="nav-item active">
+                    <i data-lucide="calendar-heart"></i>
+                    <span>Cycle Tracker</span>
+                </a>
+                <a href="profile.html" class="nav-item">
+                    <i data-lucide="user"></i>
+                    <span>Profile</span>
+                </a>
+                <a href="settings.html" class="nav-item">
+                    <i data-lucide="settings"></i>
+                    <span>Settings</span>
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <a href="#" class="nav-item" id="logoutBtn">
+                    <i data-lucide="log-out"></i>
+                    <span>Logout</span>
+                </a>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content fade-in">
+            <header class="page-header">
+                <div>
+                    <h1 class="page-title">Cycle & Fertility Tracker</h1>
+                    <p class="page-subtitle">Track your cycle, ovulation, and fertility insights</p>
+                    <div class="pink-accent-line"></div>
+                </div>
+            </header>
+
+            <!-- Summary Cards -->
+            <div class="summary-grid">
+                <div class="summary-card glass glow-pink cursor-pointer" id="cycleDayCard">
+                    <div class="card-icon">
+                        <i data-lucide="calendar"></i>
+                    </div>
+                    <div class="card-content">
+                        <span class="card-label">Cycle Day</span>
+                        <h3 class="card-value" id="cycleDayValue">Day 12</h3>
+                        <p class="card-subtext" id="cycleDaySubtext">Mid cycle phase</p>
+                    </div>
+                </div>
+
+                <div class="summary-card glass glow-purple cursor-pointer" id="nextPeriodCard">
+                    <div class="card-icon">
+                        <i data-lucide="moon"></i>
+                    </div>
+                    <div class="card-content">
+                        <span class="card-label">Next Period</span>
+                        <h3 class="card-value" id="nextPeriodValue">8 days left</h3>
+                        <p class="card-subtext" id="nextPeriodSubtext">Expected on Mar 28</p>
+                    </div>
+                </div>
+
+                <div class="summary-card glass glow-pink cursor-pointer" id="ovulationCard">
+                    <div class="card-icon">
+                        <i data-lucide="sparkles"></i>
+                    </div>
+                    <div class="card-content">
+                        <span class="card-label">Ovulation</span>
+                        <h3 class="card-value" id="ovulationValue">In 2 days</h3>
+                        <p class="card-subtext" id="ovulationSubtext">High fertility approaching</p>
+                    </div>
+                </div>
+
+                <div class="summary-card glass glow-purple cursor-pointer" id="fertileWindowCard">
+                    <div class="card-icon">
+                        <i data-lucide="heart"></i>
+                    </div>
+                    <div class="card-content">
+                        <span class="card-label">Fertility Score</span>
+                        <h3 class="card-value" id="fertilityValue">Active</h3>
+                        <p class="card-subtext" id="fertilitySubtext">Mar 18 – Mar 23</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Calendar Section -->
+            <section class="calendar-section glass">
+                <div class="calendar-header">
+                    <h2 id="currentMonth">March 2026</h2>
+                    <div class="calendar-controls">
+                        <button class="btn btn-outline btn-red" id="resetCalendarBtn">
+                            <i data-lucide="trash-2"></i> Reset Calendar
+                        </button>
+                        <button class="btn-icon" id="prevMonth"><i data-lucide="chevron-left"></i></button>
+                        <button class="btn-icon" id="nextMonth"><i data-lucide="chevron-right"></i></button>
+                    </div>
+                </div>
+                <div class="calendar-grid-header">
+                    <span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span>
+                </div>
+                <div class="calendar-grid" id="calendarGrid">
+                    <!-- JS will populate -->
+                </div>
+                <div class="calendar-legend">
+                    <div class="legend-item"><span class="dot red"></span> Period</div>
+                    <div class="legend-item"><span class="dot green"></span> Fertile Window</div>
+                    <div class="legend-item"><i data-lucide="heart" class="icon-pink"></i> Ovulation</div>
+                    <div class="legend-item"><span class="outline blue"></span> Today</div>
+                    <div class="legend-item"><span class="dot primary-dot"></span> Logged Entry</div>
+                </div>
+            </section>
+
+            <!-- Insights Section -->
+            <div class="insights-grid">
+                <div class="insights-card glass">
+                    <h3>Cycle Insights</h3>
+                    <div class="insight-item">
+                        <span>Average cycle:</span>
+                        <strong>28 days</strong>
+                    </div>
+                    <div class="insight-item">
+                        <span>Regularity:</span>
+                        <strong class="text-primary">Stable</strong>
+                    </div>
+                    <div class="insight-item">
+                        <span>Last ovulation:</span>
+                        <strong>Mar 12</strong>
+                    </div>
+                </div>
+
+                <div class="insights-card glass">
+                    <h3>Fertility Prediction</h3>
+                    <div class="insight-item">
+                        <span>Ovulation:</span>
+                        <strong class="text-pink">In 2 days</strong>
+                    </div>
+                    <div class="insight-item">
+                        <span>Pregnancy chance:</span>
+                        <strong>32%</strong>
+                    </div>
+                    <div class="insight-item">
+                        <span>Confidence score:</span>
+                        <strong class="text-purple">Medium</strong>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal Popup -->
+    <div class="modal-overlay" id="logModal">
+        <div class="modal-card glass">
+            <div class="modal-header">
+                <h2 id="modalTitle">Log for March 19</h2>
+                <button class="btn-close" id="closeModalBtn"><i data-lucide="x"></i></button>
+            </div>
+
+            <div class="modal-body">
+                <div class="marking-section">
+                    <p class="section-label">Mark Date Status</p>
+                    <div class="marking-buttons">
+                        <button class="btn btn-outline btn-mark-period" id="markPeriodBtn">
+                            <i data-lucide="droplets"></i> Period
+                        </button>
+                        <button class="btn btn-outline btn-mark-fertile" id="markFertileBtn">
+                            <i data-lucide="sparkles"></i> Fertile
+                        </button>
+                        <button class="btn btn-outline" id="clearMarkingBtn">Clear</button>
+                    </div>
+                </div>
+
+                <div class="symptom-section">
+                    <p class="section-label">Select Symptoms</p>
+                    <div class="checkbox-container">
+                        <label class="custom-checkbox">
+                            <input type="checkbox" name="symptom" value="Cramps">
+                            <span class="checkmark"></span>
+                            Cramps
+                        </label>
+                        <label class="custom-checkbox">
+                            <input type="checkbox" name="symptom" value="Fatigue">
+                            <span class="checkmark"></span>
+                            Fatigue
+                        </label>
+                        <label class="custom-checkbox">
+                            <input type="checkbox" name="symptom" value="Bloating">
+                            <span class="checkmark"></span>
+                            Bloating
+                        </label>
+                        <label class="custom-checkbox">
+                            <input type="checkbox" name="symptom" value="Mood">
+                            <span class="checkmark"></span>
+                            Mood
+                        </label>
+                        <label class="custom-checkbox">
+                            <input type="checkbox" name="symptom" value="Discharge">
+                            <span class="checkmark"></span>
+                            Discharge
+                        </label>
+                    </div>
+                </div>
+
+                <div class="notes-section">
+                    <p class="section-label">Notes</p>
+                    <textarea id="logNotes" class="glass-textarea" placeholder="Add your notes here..."></textarea>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button class="btn btn-outline" id="cancelModalBtn">Cancel</button>
+                <button class="btn btn-pink-gradient" id="saveLogBtn">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dynamic Insight Modal -->
+    <div class="modal-overlay" id="insightModal">
+        <div class="modal-card glass">
+            <div class="modal-header">
+                <h2 id="insightTitle">Insight Details</h2>
+                <button class="btn-close" id="closeInsightBtn"><i data-lucide="x"></i></button>
+            </div>
+            <div class="modal-body" id="insightBody">
+                <!-- Content injected via JS -->
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" id="closeInsightFooterBtn">Close</button>
+                <button class="btn btn-pink-gradient" id="insightActionBtn">View Full Insights</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast glass">
+        <i data-lucide="check-circle" class="text-primary"></i>
+        <span>Log saved successfully!</span>
+    </div>
+
+    <script src="assets/js/auth.js"></script>
+    <script src="assets/js/cycle-tracker.js"></script>
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+
+</html>

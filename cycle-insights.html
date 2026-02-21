@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cycle Insights | VitalTrack</title>
+    <link rel="stylesheet" href="index.css">
+    <link rel="stylesheet" href="assets/css/cycle-tracker.css">
+    <style>
+        .insights-grid-detail {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 24px;
+            margin-top: 32px;
+        }
+
+        .cycle-progress-card {
+            padding: 32px;
+            margin-bottom: 24px;
+        }
+
+        .cycle-timeline {
+            margin-top: 32px;
+            padding: 20px 0;
+            position: relative;
+        }
+
+        .timeline-track {
+            height: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 6px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .timeline-progress {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--pink));
+            width: 0%;
+            /* Dynamic */
+            border-radius: 6px;
+            box-shadow: 0 0 15px var(--primary-glow);
+            transition: width 1s ease-in-out;
+        }
+
+        .timeline-markers {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 16px;
+            font-size: 12px;
+            color: var(--text-dim);
+        }
+
+        .phase-indicator {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 20px;
+            background: rgba(255, 77, 148, 0.05);
+            border: 1px solid rgba(255, 77, 148, 0.1);
+            border-radius: 20px;
+            margin-top: 24px;
+        }
+
+        .phase-icon {
+            width: 48px;
+            height: 48px;
+            background: rgba(255, 77, 148, 0.1);
+            color: var(--pink);
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .stat-group {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .large-stat-card {
+            padding: 32px;
+            text-align: center;
+        }
+
+        .stat-circle {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 20px;
+            border: 4px solid var(--primary);
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 20px var(--primary-glow);
+        }
+
+        .history-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 16px;
+        }
+
+        .history-table th {
+            text-align: left;
+            color: var(--text-dim);
+            font-size: 13px;
+            padding: 12px;
+            font-weight: 500;
+        }
+
+        .history-table td {
+            padding: 16px 12px;
+            border-top: 1px solid var(--glass-border);
+            font-size: 14px;
+        }
+
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-dim);
+            text-decoration: none;
+            margin-bottom: 24px;
+            transition: var(--transition);
+        }
+
+        .back-btn:hover {
+            color: var(--primary);
+            transform: translateX(-4px);
+        }
+
+        .empty-state {
+            display: none;
+            padding: 80px 40px;
+            text-align: center;
+            background: var(--glass);
+            border-radius: 32px;
+            border: 1px solid var(--glass-border);
+            margin-top: 40px;
+        }
+
+        .empty-state i {
+            font-size: 64px;
+            color: var(--text-dim);
+            margin-bottom: 24px;
+            opacity: 0.5;
+        }
+
+        .empty-state h2 {
+            font-size: 24px;
+            margin-bottom: 12px;
+        }
+
+        .empty-state p {
+            color: var(--text-dim);
+            margin-bottom: 32px;
+        }
+
+        @media (max-width: 1024px) {
+            .insights-grid-detail {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+
+<body>
+    <div class="app-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar glass">
+            <div class="logo">
+                <i data-lucide="zap"></i>
+                <span>VitalTrack</span>
+            </div>
+
+            <nav class="nav-links">
+                <a href="dashboard.html" class="nav-item">
+                    <i data-lucide="layout-dashboard"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="analytics.html" class="nav-item">
+                    <i data-lucide="bar-chart-3"></i>
+                    <span>Analytics</span>
+                </a>
+                <a href="cycle-tracker.html" class="nav-item active">
+                    <i data-lucide="calendar-heart"></i>
+                    <span>Cycle Tracker</span>
+                </a>
+                <a href="profile.html" class="nav-item">
+                    <i data-lucide="user"></i>
+                    <span>Profile</span>
+                </a>
+                <a href="settings.html" class="nav-item">
+                    <i data-lucide="settings"></i>
+                    <span>Settings</span>
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <a href="#" class="nav-item" id="logoutBtn">
+                    <i data-lucide="log-out"></i>
+                    <span>Logout</span>
+                </a>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content fade-in">
+            <a href="cycle-tracker.html" class="back-btn">
+                <i data-lucide="arrow-left"></i>
+                Back to Tracker
+            </a>
+
+            <header class="page-header">
+                <div>
+                    <h1 class="page-title">Full Cycle Insights</h1>
+                    <p class="page-subtitle">Detailed breakdown of your current and historical cycle data</p>
+                    <div class="pink-accent-line"></div>
+                </div>
+            </header>
+
+            <div id="emptyState" class="empty-state">
+                <i data-lucide="calendar"></i>
+                <h2>No cycle data available</h2>
+                <p>Add your first period to the tracker to start seeing deep health insights, predictions, and fertility
+                    tracking.</p>
+                <a href="cycle-tracker.html" class="btn btn-pink-gradient">Open Tracker</a>
+            </div>
+
+            <div id="insightsGrid" class="insights-grid-detail">
+                <div class="left-col">
+                    <!-- Progress Section -->
+                    <div class="cycle-progress-card glass">
+                        <div style="display: flex; justify-content: space-between; align-items: baseline;">
+                            <h3>Current Cycle Progress</h3>
+                            <span id="progressDayText"
+                                style="color: var(--primary); font-weight: 700;">Loading...</span>
+                        </div>
+                        <div class="cycle-timeline">
+                            <div class="timeline-track">
+                                <div id="timelineProgress" class="timeline-progress"></div>
+                            </div>
+                            <div class="timeline-markers">
+                                <span>Period</span>
+                                <span style="margin-left: 10%;">Follicular</span>
+                                <span style="color: var(--pink);">Ovulation</span>
+                                <span>Luteal</span>
+                            </div>
+                        </div>
+
+                        <div id="phaseDisplay" class="phase-indicator">
+                            <div class="phase-icon">
+                                <i data-lucide="sparkles" id="phaseIcon"></i>
+                            </div>
+                            <div>
+                                <h4 id="phaseLabel" style="color: var(--pink); margin-bottom: 4px;">Loading phase...
+                                </h4>
+                                <p id="phaseDescription" style="font-size: 13px; color: var(--text-dim);">Analyzing your
+                                    data...</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- History Section -->
+                    <div class="glass" style="padding: 32px;">
+                        <h3>Past Cycle History</h3>
+                        <div style="overflow-x: auto;">
+                            <table class="history-table">
+                                <thead>
+                                    <tr>
+                                        <th>Start Date</th>
+                                        <th>Length</th>
+                                        <th>Period Duration</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="historyTableBody">
+                                    <!-- Dynamic rows -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="side-col">
+                    <div class="stat-group">
+                        <div class="large-stat-card glass glow-pink">
+                            <div class="stat-circle">
+                                <span id="ovulationCountdown" style="font-size: 28px; font-weight: 700;">N/A</span>
+                                <span style="font-size: 12px; color: var(--text-dim);">Days</span>
+                            </div>
+                            <h4>Ovulation Countdown</h4>
+                            <p id="ovulationDateText" style="font-size: 13px; color: var(--text-dim); margin-top: 8px;">
+                                Upcoming</p>
+                        </div>
+
+                        <div class="large-stat-card glass glow-purple">
+                            <div class="stat-circle"
+                                style="border-color: var(--purple); box-shadow: 0 0 20px var(--purple-glow);">
+                                <span id="fertilityScoreText" style="font-size: 28px; font-weight: 700;">--</span>
+                            </div>
+                            <h4>Fertility Score</h4>
+                            <p id="fertilityStatusText"
+                                style="font-size: 13px; color: var(--text-dim); margin-top: 8px;">Analyzing...</p>
+                        </div>
+
+                        <div class="large-stat-card glass">
+                            <h3 style="font-size: 16px; margin-bottom: 16px;">Next Period</h3>
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <div style="text-align: left;">
+                                    <div id="nextPeriodDateText" style="font-size: 20px; font-weight: 700;">N/A</div>
+                                    <div style="font-size: 12px; color: var(--text-dim);">Estimated Date</div>
+                                </div>
+                                <div style="text-align: right;">
+                                    <div id="nextPeriodDaysLeft"
+                                        style="font-size: 20px; font-weight: 700; color: var(--pink);">--</div>
+                                    <div style="font-size: 12px; color: var(--text-dim);">Days Left</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="assets/js/auth.js"></script>
+    <script src="assets/js/cycle-insights.js"></script>
+</body>
+
+</html>
